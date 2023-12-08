@@ -28,8 +28,15 @@ public class TM{
                 throw new Exception("No command line arguments provided");
             }
 
+            switch (args[0].toLowerCase()){
+                case "start":
+
+                    break;
+                default:
+                    throw new Exception("Invalid command line argument");
+            }
+
             Logger logger = Logger.getInstance();
-            logger.log(args[0]);
 
         }catch(Exception ex){
 
@@ -50,6 +57,25 @@ class Constants{
 
     // log element size
     protected static final int TASK_ATTR_SIZE = 5;
+}
+
+// Data structure of a task
+class Task{
+
+    private String taskName;
+    private String taskSize;
+    private ZonedDateTime taskStart;
+    private ZonedDateTime taskEnd;
+    private String taskDes;
+
+    protected Task(String name, String size, ZonedDateTime start, ZonedDateTime end, String des){
+
+        taskName = name;
+        taskSize = size;
+        taskStart = start;
+        taskEnd = end;
+        taskDes = des;
+    }
 }
 
 // Logger
@@ -170,14 +196,14 @@ class Logger{
     }
 
     // This write lines to log file
-    protected void log(String msg){
+    protected void log(String msg, Task task){
 
 
     }
 
-    protected List<String> getOperationLog(){
+    protected List<Task> getTasks(){
 
-        return operationLog;
+        return taskSummary;
     }
 
     protected static Logger getInstance() {
@@ -188,23 +214,5 @@ class Logger{
         }
 
         return instance;
-    }
-}
-
-class Task{
-
-    private String taskName;
-    private String taskSize;
-    private ZonedDateTime taskStart;
-    private ZonedDateTime taskEnd;
-    private String taskDes;
-
-    protected Task(String name, String size, ZonedDateTime start, ZonedDateTime end, String des){
-
-        taskName = name;
-        taskSize = size;
-        taskStart = start;
-        taskEnd = end;
-        taskDes = des;
     }
 }
