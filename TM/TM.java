@@ -9,7 +9,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,9 +43,6 @@ public class TM{
                 default:
                     throw new Exception("Invalid command line argument");
             }
-
-            
-
         }catch(Exception ex){
 
             System.out.println(ex.getMessage());
@@ -65,7 +61,7 @@ class Constants{
     protected static final String OP_LOG = "Operation Log:";
     protected static final String TASK_SUMMARY = "Task Summary:";
 
-    // log element size
+    // log element size (for error test)
     protected static final int TASK_ATTR_SIZE = 5;
 
     // DateTime formate
@@ -76,8 +72,10 @@ class Constants{
     protected static final ZonedDateTime MIN_TIME 
     = ZonedDateTime.parse("2000/01/01-00:00:00", FORMATTER.withZone(ZoneId.systemDefault()));;
 
+    // Printing formats
     protected static final String PRINT_FORMAT = "%-22s";
-    protected static final String LABEL = String.format(Constants.PRINT_FORMAT, "Task Name")
+    protected static final String LABEL = 
+                                    String.format(Constants.PRINT_FORMAT, "Task Name")
                                      + String.format(Constants.PRINT_FORMAT, "Task Size")
                                      + String.format(Constants.PRINT_FORMAT, "Start Time")
                                      + String.format(Constants.PRINT_FORMAT, "End Time")
@@ -259,8 +257,10 @@ class Logger{
             throw new RuntimeException("Invalid Task Summary: members = " + words.length);
         }
 
-        ZonedDateTime startTime = ZonedDateTime.parse(words[2], Constants.FORMATTER);
-        ZonedDateTime endTime = ZonedDateTime.parse(words[3], Constants.FORMATTER);
+        ZonedDateTime startTime = ZonedDateTime.parse(words[2], 
+                                    Constants.FORMATTER.withZone(ZoneId.systemDefault()));
+        ZonedDateTime endTime = ZonedDateTime.parse(words[3], 
+                                    Constants.FORMATTER.withZone(ZoneId.systemDefault()));
 
         Task task = new Task(words[0], words[1], startTime, endTime, words[4]);
         taskSummary.add(task);
@@ -321,6 +321,7 @@ class Logger{
             for (Task task : taskSummary) {
 
                 writer.write(task.printTask());
+                writer.write("\n");
             }
             writer.write("\n");
         }
