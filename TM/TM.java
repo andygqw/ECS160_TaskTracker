@@ -1,6 +1,6 @@
 package TM;
 
-// Imports
+// Imports for files R/W
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+// Imports for data operations
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,11 +16,13 @@ import java.util.HashMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+// Imports for store time value
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 
+// Imports for manage and categorize data
 import java.util.Map;
 import java.util.Collections;
 
@@ -83,6 +86,7 @@ public class TM{
                     }
 
                     break;
+
                 case Constants.SUMMARY:
 
                     if (args.length == 1){

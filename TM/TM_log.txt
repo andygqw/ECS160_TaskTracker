@@ -1,0 +1,27 @@
+ Operation Log:
+start                 task1                 2023/12/08-14:43:27   
+start                 task2                 2023/12/08-14:43:39   
+start                 task3                 2023/12/08-14:43:43   
+stop                  task1                 2023/12/08-14:43:52   
+start                 task1                 2023/12/08-14:43:57   
+size                  task1                 2023/12/08-14:44:54   
+size                  task2                 2023/12/08-14:45:02   
+size                  task3                 2023/12/08-14:45:05   
+stop                  task1                 2023/12/08-14:46:20   
+rename                task1                 2023/12/08-14:48:39   
+start                 task1                 2023/12/08-14:48:49   
+start                 NewTask               2023/12/08-14:49:02   
+stop                  task1                 2023/12/08-14:49:08   
+stop                  NewTask               2023/12/08-14:49:12   
+describe              NewTask               2023/12/08-14:49:58   
+stop                  task2                 2023/12/08-14:50:19   
+stop                  task3                 2023/12/08-14:50:22   
+
+Task Summary:
+Task Name             Task Size             Start Time            End Time              Description           
+NewTask               XL                    2023/12/08-14:43:27   2023/12/08-14:43:52   This was task1, now it
+task2                 L                     2023/12/08-14:43:39   2023/12/08-14:50:19   UNDEFINED             
+task3                 M                     2023/12/08-14:43:43   2023/12/08-14:50:22   UNDEFINED             
+NewTask               XL                    2023/12/08-14:43:57   2023/12/08-14:46:20   This was task1, now it
+task1                 UNDEFINED             2023/12/08-14:48:49   2023/12/08-14:49:08   UNDEFINED             
+NewTask               XL                    2023/12/08-14:49:02   2023/12/08-14:49:12   This was task1, now it
