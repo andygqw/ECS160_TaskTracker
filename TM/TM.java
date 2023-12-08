@@ -33,6 +33,7 @@ public class TM{
 
             Logger logger = Logger.getInstance();
 
+            // Parse arguments
             switch (args[0].toLowerCase()){
                 case Constants.START:
                     
@@ -42,6 +43,10 @@ public class TM{
                                                 + ": " + Constants.ERR_ARGUMENT);
                     }else{
 
+                        if (args[1].length() > 22){
+
+                            throw new IllegalArgumentException(Constants.ERR_EXCEED);
+                        }
                         logger.startTask(args[1]);
                     }
                     break;
@@ -98,9 +103,6 @@ class Constants{
     protected static final String OP_LOG = "Operation Log:";
     protected static final String TASK_SUMMARY = "Task Summary:";
 
-    // log element size (for error test)
-    protected static final int TASK_ATTR_SIZE = 5;
-
     // DateTime formate
     protected static final DateTimeFormatter FORMATTER 
     = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH:mm:ss");
@@ -111,12 +113,13 @@ class Constants{
 
     // Printing tasks formats
     protected static final String PRINT_FORMAT = "%-22s";
+    protected static final int PRINT_GAP = 22;
     protected static final String LABEL = 
-                                    String.format(Constants.PRINT_FORMAT, "Task Name")
-                                     + String.format(Constants.PRINT_FORMAT, "Task Size")
-                                     + String.format(Constants.PRINT_FORMAT, "Start Time")
-                                     + String.format(Constants.PRINT_FORMAT, "End Time")
-                                     + String.format(Constants.PRINT_FORMAT, "Description");
+                            String.format(Constants.PRINT_FORMAT, "Task Name")
+                                + String.format(Constants.PRINT_FORMAT, "Task Size")
+                                + String.format(Constants.PRINT_FORMAT, "Start Time")
+                                + String.format(Constants.PRINT_FORMAT, "End Time")
+                                + String.format(Constants.PRINT_FORMAT, "Description");
 
     protected static final String UNDEFINED = "UNDEFINED";
 
@@ -130,6 +133,8 @@ class Constants{
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
     protected static final String ERR_NOT_RUNNING = "Task is not running";
     protected static final String ERR_TASK_RUNNING = "Task is running";
+    protected static final String ERR_EXCEED= "Task name is maximum 22 character long";
+
 }
 
 // Size values
@@ -295,19 +300,29 @@ class Logger{
     // Helper function to read all tasks from log
     private void readTask(String line){
 
-        String[] words = line.split("\\s+");
+        int len = line.length();
 
-        if (words.length != Constants.TASK_ATTR_SIZE){
+        List<String> segments = new ArrayList<>();
 
-            throw new RuntimeException("Invalid Task Summary: members = " + words.length);
+        for (int i = 0; i < len; i += Constants.PRINT_GAP){
+
+            int end = Math.min(i + Constants.PRINT_GAP, len);
+
+            // Extract the substring
+            String segment = line.substring(i, end);
+
+            segment = segment.replaceAll("\\s+$", "");
+
+            // Add the segment to the list
+            segments.add(segment);
         }
 
-        ZonedDateTime startTime = ZonedDateTime.parse(words[2], 
+        ZonedDateTime startTime = ZonedDateTime.parse(segments.get(2), 
                                     Constants.FORMATTER.withZone(ZoneId.systemDefault()));
-        ZonedDateTime endTime = ZonedDateTime.parse(words[3], 
+        ZonedDateTime endTime = ZonedDateTime.parse(segments.get(3), 
                                     Constants.FORMATTER.withZone(ZoneId.systemDefault()));
 
-        Task task = new Task(words[0], TASK_SIZE.valueOf(words[1]), startTime, endTime, words[4]);
+        Task task = new Task(segments.get(0), TASK_SIZE.valueOf(segments.get(1)), startTime, endTime, segments.get(4));
         taskSummary.add(task);
     }
 
@@ -398,6 +413,14 @@ class Logger{
 
             throw new RuntimeException("Couldn't find " + name); 
         }
+    }
+
+    // Operate Summary
+    protected void summaryTask() throws IOException{
+
+
+
+
     }
 
     private void printHelper(String msg) throws IOException{
