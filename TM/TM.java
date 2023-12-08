@@ -69,10 +69,21 @@ class Constants{
     protected static final int TASK_ATTR_SIZE = 5;
 
     // DateTime formate
-    protected static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    protected static final DateTimeFormatter FORMATTER 
+    = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH:mm:ss");
 
     // Minimum time which used to compare
-    protected static final ZonedDateTime MIN_TIME = LocalDateTime.MIN.atZone(ZoneId.systemDefault());
+    protected static final ZonedDateTime MIN_TIME 
+    = ZonedDateTime.parse("2000/01/01-00:00:00", FORMATTER.withZone(ZoneId.systemDefault()));;
+
+    protected static final String PRINT_FORMAT = "%-22s";
+    protected static final String LABEL = String.format(Constants.PRINT_FORMAT, "Task Name")
+                                     + String.format(Constants.PRINT_FORMAT, "Task Size")
+                                     + String.format(Constants.PRINT_FORMAT, "Start Time")
+                                     + String.format(Constants.PRINT_FORMAT, "End Time")
+                                     + String.format(Constants.PRINT_FORMAT, "Description");
+
+    protected static final String UNDEFINED = "Undefined";
 }
 
 // Data structure of a task
@@ -87,10 +98,10 @@ class Task{
     protected Task(String name){
 
         taskName = name;
-        taskSize = "";
+        taskSize = Constants.UNDEFINED;
         taskStart = ZonedDateTime.now();
         taskEnd = Constants.MIN_TIME;
-        taskDes = "";
+        taskDes = Constants.UNDEFINED;
     }
 
     protected Task(String name, String size, ZonedDateTime start, ZonedDateTime end, String des){
@@ -119,6 +130,20 @@ class Task{
         taskName = name;
         taskStart = ZonedDateTime.now();
     }
+
+
+    // Format Task print results
+    protected String printTask(){
+
+        String result = "";
+        result += String.format(Constants.PRINT_FORMAT, taskName);
+        result += String.format(Constants.PRINT_FORMAT, taskSize);
+        result += String.format(Constants.PRINT_FORMAT, taskStart.format(Constants.FORMATTER));
+        result += String.format(Constants.PRINT_FORMAT, taskEnd.format(Constants.FORMATTER));
+        result += String.format(Constants.PRINT_FORMAT, taskDes);
+
+        return result;
+    }
 }
 
 // Logger
@@ -131,12 +156,13 @@ class Logger{
     private List<String> operationLog = new ArrayList<>();
     private List<Task> taskSummary = new ArrayList<>();
 
+    // file obj
+    private File file = new File(Constants.LOG_FNAME);
+
     // Private constructor
     private Logger(){
 
         try{
-
-            File file = new File(Constants.LOG_FNAME);
 
             if(!file.exists()){
 
@@ -159,9 +185,10 @@ class Logger{
     private static void createFile(File file) throws IOException {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("Operation Log:\n");
+            writer.write(Constants.OP_LOG + "\n");
             writer.write("\n"); // Empty content for Operation Log
-            writer.write("Task Summary:\n");
+            writer.write(Constants.TASK_SUMMARY + "\n");
+            writer.write(Constants.LABEL + "\n");
             writer.write("\n"); // Empty content for Task Summary
         }
     }
@@ -191,7 +218,9 @@ class Logger{
                 isOpLog = true;
                 continue;
             } else if (line.startsWith(Constants.TASK_SUMMARY)) {
-                
+                continue;
+            } else if (line.equals(Constants.LABEL)){
+
                 isValidLog++;
                 isOpLog = false;
                 isTaskSummary = true;
@@ -227,7 +256,7 @@ class Logger{
 
         if (words.length != Constants.TASK_ATTR_SIZE){
 
-            throw new RuntimeException("Invalid Task Summary");
+            throw new RuntimeException("Invalid Task Summary: members = " + words.length);
         }
 
         ZonedDateTime startTime = ZonedDateTime.parse(words[2], Constants.FORMATTER);
@@ -255,7 +284,7 @@ class Logger{
     }
 
     // Operate start
-    protected void startTask(String name){
+    protected void startTask(String name) throws IOException{
 
         Task target = findTask(name);
 
@@ -267,8 +296,34 @@ class Logger{
             }
         }
 
+        // Add task to our record
         target = new Task(name);
         taskSummary.add(target);
+
+        // Define log message
+        String logMsg = "";
+        printLog(logMsg);
+    }
+
+    private void printLog(String msg) throws IOException{
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write("Operation Log:\n");
+            for (String line : operationLog) {
+
+                writer.write(line);
+                writer.write("\n");
+            }
+            writer.write(msg);
+            writer.write("\n");
+            writer.write("Task Summary:\n");
+            writer.write(Constants.LABEL + "\n");
+            for (Task task : taskSummary) {
+
+                writer.write(task.printTask());
+            }
+            writer.write("\n");
+        }
     }
 
     protected static Logger getInstance() {
