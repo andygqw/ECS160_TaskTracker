@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.Duration;
 
 
 // Main body
@@ -80,7 +81,10 @@ public class TM{
 
                 case Constants.SUMMARY:
 
-                    
+                    if (args.length == 1){
+
+                        logger.summaryTask();
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
@@ -120,6 +124,11 @@ class Constants{
                                 + String.format(Constants.PRINT_FORMAT, "Start Time")
                                 + String.format(Constants.PRINT_FORMAT, "End Time")
                                 + String.format(Constants.PRINT_FORMAT, "Description");
+
+    protected static final String SUM_LABEL = 
+                            String.format(Constants.PRINT_FORMAT, "Task Name")
+                                + String.format(Constants.PRINT_FORMAT, "Task Size")
+                                + String.format(Constants.PRINT_FORMAT, "Time Spent");
 
     protected static final String UNDEFINED = "UNDEFINED";
 
@@ -182,6 +191,28 @@ class Task{
 
         taskDes = description;
         taskSize = size;
+    }
+
+    // Summarize a task
+    protected String summary(){
+
+        String time = isRunning.get() == 
+                    0 ? summaryHelper(ZonedDateTime.now()) : summaryHelper(taskEnd);
+
+        String result = "";
+        result += String.format(Constants.PRINT_FORMAT, taskName);
+        result += String.format(Constants.PRINT_FORMAT, taskSize);
+        result += String.format(Constants.PRINT_FORMAT, time);
+
+        return result;
+    }
+    private String summaryHelper(ZonedDateTime end){
+
+        Duration timeDifference = Duration.between(taskStart, end);
+            
+        return timeDifference.toHours() + " Hours, " 
+                        + timeDifference.toMinutesPart() + " Minutes, " 
+                        + timeDifference.toSecondsPart() + " Seconds";
     }
 
     // Format Task print results
@@ -418,9 +449,11 @@ class Logger{
     // Operate Summary
     protected void summaryTask() throws IOException{
 
+        System.out.println(Constants.SUM_LABEL);
+        for (Task task : taskSummary){
 
-
-
+            System.out.println(task.summary());
+        }
     }
 
     private void printHelper(String msg) throws IOException{
