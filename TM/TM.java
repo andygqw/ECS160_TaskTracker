@@ -7,12 +7,10 @@ import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.lang.invoke.ConstantCallSite;
+
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
-
 import java.util.ArrayList;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,29 +32,47 @@ public class TM{
             Logger logger = Logger.getInstance();
 
             switch (args[0].toLowerCase()){
-                case "start":
+                case Constants.START:
                     
                     if (args.length != 2){
 
-                        throw new IllegalArgumentException("Invalid command line argument");
+                        throw new IllegalArgumentException(Constants.START 
+                                                + ": " + Constants.ERR_ARGUMENT);
                     }else{
 
                         logger.startTask(args[1]);
                     }
                     break;
 
-                case "stop":
+                case Constants.STOP:
                     
                     if (args.length != 2){
 
-                        throw new IllegalArgumentException("Invalid command line argument");
+                        throw new IllegalArgumentException(Constants.STOP
+                                                + ": "  + Constants.ERR_ARGUMENT);
                     }else{
 
                         logger.stopTask(args[1]);
                     }
                     break;
+
+                case Constants.DESCRIBE:
+
+                    if (args.length == 3){
+
+                        logger.describeTask(args[1], args[2], Constants.UNDEFINED);
+                    }else if(args.length == 4){
+                        
+                        logger.describeTask(args[1], args[2], args[3].toUpperCase());
+                    }else{
+                        throw new IllegalArgumentException(Constants.DESCRIBE 
+                                                + ": " + Constants.ERR_ARGUMENT);
+                    }
+
+                    break;
+
                 default:
-                    throw new IllegalArgumentException("Invalid command line argument");
+                    throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
             }
         }catch(Exception ex){
 
@@ -96,19 +112,28 @@ class Constants{
                                      + String.format(Constants.PRINT_FORMAT, "End Time")
                                      + String.format(Constants.PRINT_FORMAT, "Description");
 
-    protected static final String UNDEFINED = "Undefined";
+    protected static final String UNDEFINED = "UNDEFINED";
 
     // Printing log formats
     protected static final String START = "start";
     protected static final String STOP = "stop";
+    protected static final String DESCRIBE = "describe";
 
+    // Error messages
+    protected static final String ERR_ARGUMENT = "Invalid command line argument";
+    protected static final String ERR_TASK_RUNNING = "Task is not running";
+}
+
+// Size values
+enum TASK_SIZE{
+    UNDEFINED, S, M, L ,XL
 }
 
 // Data structure of a task
 class Task{
 
     private String taskName;
-    private String taskSize;
+    private TASK_SIZE taskSize;
     private ZonedDateTime taskStart;
     private ZonedDateTime taskEnd;
     private String taskDes;
@@ -116,13 +141,13 @@ class Task{
     protected Task(String name){
 
         taskName = name;
-        taskSize = Constants.UNDEFINED;
+        taskSize = TASK_SIZE.UNDEFINED;
         taskStart = ZonedDateTime.now();
         taskEnd = Constants.MIN_TIME;
         taskDes = Constants.UNDEFINED;
     }
 
-    protected Task(String name, String size, ZonedDateTime start, ZonedDateTime end, String des){
+    protected Task(String name, TASK_SIZE size, ZonedDateTime start, ZonedDateTime end, String des){
 
         taskName = name;
         taskSize = size;
@@ -146,6 +171,12 @@ class Task{
     protected void stop(){
 
         taskEnd = ZonedDateTime.now();
+    }
+
+    protected void describe(String description, TASK_SIZE size){
+
+        taskDes = description;
+        taskSize = size;
     }
 
     // Format Task print results
@@ -276,7 +307,7 @@ class Logger{
         ZonedDateTime endTime = ZonedDateTime.parse(words[3], 
                                     Constants.FORMATTER.withZone(ZoneId.systemDefault()));
 
-        Task task = new Task(words[0], words[1], startTime, endTime, words[4]);
+        Task task = new Task(words[0], TASK_SIZE.valueOf(words[1]), startTime, endTime, words[4]);
         taskSummary.add(task);
     }
 
@@ -307,7 +338,7 @@ class Logger{
 
             if (target.isRunning() == 0){
 
-                throw new RuntimeException("Task is already running");
+                throw new RuntimeException(Constants.ERR_TASK_RUNNING);
             }
         }
 
@@ -331,7 +362,7 @@ class Logger{
                 target.stop();
             }else{
 
-                throw new RuntimeException("Task is not running"); 
+                throw new RuntimeException(Constants.ERR_TASK_RUNNING); 
             }
         }else{
 
@@ -341,6 +372,32 @@ class Logger{
         // Print log message
         printLog(Constants.STOP, name);
 
+    }
+
+    // Operate Describe
+    protected void describeTask(String name, 
+                                    String description, 
+                                        String size) throws IOException{
+
+        Task target = findTask(name);
+
+        if(target != null){
+
+            try {
+
+                TASK_SIZE s = TASK_SIZE.valueOf(size);
+                target.describe(description, s);
+
+                printLog(Constants.DESCRIBE, name);
+            } catch (IllegalArgumentException e) {
+                
+                System.out.println("Invalid size: " + size);
+                System.exit(0);
+            }
+        }else{
+
+            throw new RuntimeException("Couldn't find " + name); 
+        }
     }
 
     private void printHelper(String msg) throws IOException{
@@ -368,7 +425,8 @@ class Logger{
 
         String msg =  String.format(Constants.PRINT_FORMAT, op)
                 + String.format(Constants.PRINT_FORMAT, name)
-                + String.format(Constants.PRINT_FORMAT, (ZonedDateTime.now()).format(Constants.FORMATTER));
+                + String.format(Constants.PRINT_FORMAT, 
+                                (ZonedDateTime.now()).format(Constants.FORMATTER));
 
         printHelper(msg);
     }

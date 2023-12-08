@@ -1,18 +1,21 @@
 Operation Log:
-start                 task1                 2023/12/08-00:14:04   
-start                 task2                 2023/12/08-00:14:07   
-start                 task3                 2023/12/08-00:14:09   
-start                 task4                 2023/12/08-00:14:11   
-stop                  task1                 2023/12/08-00:14:20   
-stop                  task2                 2023/12/08-00:14:26   
-start                 task5                 2023/12/08-00:14:35   
-stop                  task3                 2023/12/08-00:14:48   
-stop                  task5                 2023/12/08-00:14:50   
+start                 task1                 2023/12/08-00:54:42   
+start                 task2                 2023/12/08-00:54:44   
+start                 task3                 2023/12/08-00:54:46   
+start                 task4                 2023/12/08-00:54:48   
+stop                  task1                 2023/12/08-00:55:00   
+describe              task1                 2023/12/08-01:03:23   
+describe              task2                 2023/12/08-01:03:59   
+stop                  task2                 2023/12/08-01:04:09   
+describe              task2                 2023/12/08-01:05:05   
+describe              task3                 2023/12/08-01:06:23   
+stop                  task3                 2023/12/08-01:06:39   
+describe              task4                 2023/12/08-01:10:09   
+describe              task4                 2023/12/08-01:10:31   
 
 Task Summary:
 Task Name             Task Size             Start Time            End Time              Description           
-task1                 Undefined             2023/12/08-00:14:04   2023/12/08-00:14:20   Undefined             
-task2                 Undefined             2023/12/08-00:14:07   2023/12/08-00:14:26   Undefined             
-task3                 Undefined             2023/12/08-00:14:09   2023/12/08-00:14:48   Undefined             
-task4                 Undefined             2023/12/08-00:14:11   2000/01/01-00:00:00   Undefined             
-task5                 Undefined             2023/12/08-00:14:35   2023/12/08-00:14:50   Undefined             
+task1                 M                     2023/12/08-00:54:42   2023/12/08-00:55:00   Thisisadescription    
+task2                 XL                    2023/12/08-00:54:44   2023/12/08-01:04:09   gg                    
+task3                 XL                    2023/12/08-00:54:46   2023/12/08-01:06:39   gun                   
+task4                 UNDEFINED             2023/12/08-00:54:48   2000/01/01-00:00:00   This is a great description.
