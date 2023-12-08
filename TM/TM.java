@@ -243,6 +243,9 @@ class Logger{
     private List<String> operationLog = new ArrayList<>();
     private List<Task> taskSummary = new ArrayList<>();
 
+    // Store cleaned tasks
+    Map<String, Duration> map = new HashMap<>();
+
     // file obj
     private File file = new File(Constants.LOG_FNAME);
 
@@ -329,6 +332,20 @@ class Logger{
                                             Invalid Log file.
                                             A good log file should contain
                                             Operation Log and Task Summary""");
+        }
+
+        // Initial clean data
+        for (Task task : taskSummary){
+
+            if (map.containsKey(task.getName.get())){
+
+                Duration time = map.get(task.getName.get())
+                                    .plus(task.summaryTime());
+
+                map.put(task.getName.get(), time);
+            }else{
+                map.put(task.getName.get(), task.summaryTime());
+            }
         }
     }
 
@@ -484,22 +501,6 @@ class Logger{
     // with same name.
     protected void summaryTask(){
 
-        Map<String, Duration> map = new HashMap<>();
-
-        // Get all info
-        for (Task task : taskSummary){
-
-            if (map.containsKey(task.getName.get())){
-
-                Duration time = map.get(task.getName.get())
-                                    .plus(task.summaryTime());
-
-                map.put(task.getName.get(), time);
-            }else{
-                map.put(task.getName.get(), task.summaryTime());
-            }
-        }
-
         // Print here
         System.out.println(Constants.SUM_LABEL);
         for (Map.Entry<String, Duration> entry : map.entrySet()){
@@ -521,37 +522,33 @@ class Logger{
             throw new RuntimeException("Couldn't find " + name);
         }
 
-        Duration time = Duration.ZERO;
-        for (Task task : taskSummary){
-
-            if (task.hasTask.test(name)){
-                
-                time = time.plus(task.summaryTime());
-            }
-        }
-
-        System.out.println(Constants.SUM_LABEL);
         System.out.println(String.format(Constants.PRINT_FORMAT, name)
-                                + String.format(Constants.PRINT_FORMAT, 
-                                    timeConverter(time)));
-    
+                            + String.format(Constants.PRINT_FORMAT, 
+                                timeConverter(map.get(name))));
     }
     // Operate summary with Size argument
     protected void summaryTask(TASK_SIZE size){
 
-        System.out.println(Constants.SUM_LABEL);
+        List<String> viewed = new ArrayList<>();
+
         for (Task task : taskSummary){
 
-           if (task.isSize.test(size)){
+            if (task.isSize.test(size)){
 
-                System.out.println(String.format(Constants.PRINT_FORMAT,
-                                                task.getName.get()) 
-                                    + 
-                                    String.format(Constants.PRINT_FORMAT, 
-                                                timeConverter(task.summaryTime())));
+                if (!viewed.contains(task.getName.get())){
+
+                    System.out.println(String.format(Constants.PRINT_FORMAT, 
+                                                        task.getName.get())
+                    + String.format(Constants.PRINT_FORMAT, 
+                                timeConverter(map.get(task.getName.get())))); 
+                                
+                    viewed.add(task.getName.get());
+                }               
             }
         }
     }
+        
+
 
     private String timeConverter(Duration timeDifference){
 
