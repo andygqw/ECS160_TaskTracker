@@ -1,11 +1,3 @@
 Operation Log:
 
-oprtn tname dscrptn 
-Hello
-Aloha
-
 Task Summary:
-
-TaskName TaskSize 2023-03-10T10:15:30+01:00[Europe/Paris] TaskEndTime TaskDescrptn
-HAHA
-GAGA

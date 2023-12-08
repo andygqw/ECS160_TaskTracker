@@ -9,9 +9,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
 
 
 // Main body
@@ -21,22 +22,30 @@ public class TM{
     public static void main(String[] args){
         
         try{
-
             // Throw empty argument exception
             if (args.length == 0){
 
                 throw new Exception("No command line arguments provided");
             }
 
+            Logger logger = Logger.getInstance();
+
             switch (args[0].toLowerCase()){
                 case "start":
+                    
+                    if (args.length != 2){
 
+                        throw new Exception("Invalid command line arguments");
+                    }else{
+
+                        logger.startTask(args[1]);
+                    }
                     break;
                 default:
                     throw new Exception("Invalid command line argument");
             }
 
-            Logger logger = Logger.getInstance();
+            
 
         }catch(Exception ex){
 
@@ -51,12 +60,19 @@ class Constants{
 
     // Log file name
     protected static final String LOG_FNAME = "TM_log.txt";
+
     // log file section names
     protected static final String OP_LOG = "Operation Log:";
     protected static final String TASK_SUMMARY = "Task Summary:";
 
     // log element size
     protected static final int TASK_ATTR_SIZE = 5;
+
+    // DateTime formate
+    protected static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+
+    // Minimum time which used to compare
+    protected static final ZonedDateTime MIN_TIME = LocalDateTime.MIN.atZone(ZoneId.systemDefault());
 }
 
 // Data structure of a task
@@ -68,6 +84,15 @@ class Task{
     private ZonedDateTime taskEnd;
     private String taskDes;
 
+    protected Task(String name){
+
+        taskName = name;
+        taskSize = "";
+        taskStart = ZonedDateTime.now();
+        taskEnd = Constants.MIN_TIME;
+        taskDes = "";
+    }
+
     protected Task(String name, String size, ZonedDateTime start, ZonedDateTime end, String des){
 
         taskName = name;
@@ -76,10 +101,28 @@ class Task{
         taskEnd = end;
         taskDes = des;
     }
+
+    // Check if name exists
+    protected boolean hasTask(String name){
+
+        return taskName.equals(name);
+    }
+
+    // Check if this task is still going
+    protected boolean isRunning(){
+
+        return taskEnd == Constants.MIN_TIME;
+    }
+
+    protected void startTask(String name){
+
+        taskName = name;
+        taskStart = ZonedDateTime.now();
+    }
 }
 
 // Logger
-// job: uses singleton design to read & write logs
+// uses singleton design to read & write logs
 class Logger{
 
     // Class instance
@@ -123,6 +166,7 @@ class Logger{
         }
     }
 
+    // Section1: Read file into objects
     private void readFile(File file) throws IOException {
 
         List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
@@ -186,24 +230,45 @@ class Logger{
             throw new RuntimeException("Invalid Task Summary");
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
-
-        ZonedDateTime startTime = ZonedDateTime.parse(words[2], formatter);
-        ZonedDateTime endTime = ZonedDateTime.parse(words[3], formatter);
+        ZonedDateTime startTime = ZonedDateTime.parse(words[2], Constants.FORMATTER);
+        ZonedDateTime endTime = ZonedDateTime.parse(words[3], Constants.FORMATTER);
 
         Task task = new Task(words[0], words[1], startTime, endTime, words[4]);
         taskSummary.add(task);
     }
 
-    // This write lines to log file
-    protected void log(String msg, Task task){
+    // Section2: Write logs to file
+    private Task findTask(String name){
 
+        Task result = null;
 
+        // Find latest record
+        for (Task task : taskSummary){
+
+            if (task.hasTask(name)){
+
+                result = task;
+            }
+        }
+
+        return result; // Null if not found
     }
 
-    protected List<Task> getTasks(){
+    // Operate start
+    protected void startTask(String name){
 
-        return taskSummary;
+        Task target = findTask(name);
+
+        if(target != null){
+
+            if (target.isRunning()){
+
+                throw new RuntimeException("Task is already running");
+            }
+        }
+
+        target = new Task(name);
+        taskSummary.add(target);
     }
 
     protected static Logger getInstance() {
