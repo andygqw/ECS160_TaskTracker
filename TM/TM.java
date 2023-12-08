@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.invoke.ConstantCallSite;
 import java.util.List;
 
 import javax.management.RuntimeErrorException;
@@ -314,10 +315,8 @@ class Logger{
         target = new Task(name);
         taskSummary.add(target);
 
-        // Define log message
-        String logMsg = Constants.START + " " + name + " " +
-                            (ZonedDateTime.now()).format(Constants.FORMATTER);
-        printLog(logMsg);
+        // Print log message
+        printLog(Constants.START, name);
     }
 
     // Operate Stop
@@ -339,13 +338,12 @@ class Logger{
             throw new RuntimeException("Couldn't find " + name);
         }
 
-        // Define log message
-        String logMsg = Constants.STOP + " " + name + " " +
-                            (ZonedDateTime.now()).format(Constants.FORMATTER);
-        printLog(logMsg);
+        // Print log message
+        printLog(Constants.STOP, name);
+
     }
 
-    private void printLog(String msg) throws IOException{
+    private void printHelper(String msg) throws IOException{
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("Operation Log:\n");
@@ -364,6 +362,15 @@ class Logger{
                 writer.write("\n");
             }
         }
+    }
+
+    private void printLog(String op, String name) throws IOException{
+
+        String msg =  String.format(Constants.PRINT_FORMAT, op)
+                + String.format(Constants.PRINT_FORMAT, name)
+                + String.format(Constants.PRINT_FORMAT, (ZonedDateTime.now()).format(Constants.FORMATTER));
+
+        printHelper(msg);
     }
 
     protected static Logger getInstance() {
