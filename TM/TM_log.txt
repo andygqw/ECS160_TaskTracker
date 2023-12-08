@@ -10,10 +10,16 @@ describe              task3                 2023/12/08-04:13:41
 describe              task2                 2023/12/08-04:13:49   
 describe              task1                 2023/12/08-04:23:54   
 size                  task3                 2023/12/08-04:55:57   
+size                  task1                 2023/12/08-05:05:05   
+stop                  task3                 2023/12/08-05:06:49   
+rename                task3                 2023/12/08-05:08:52   
+rename                task1                 2023/12/08-05:09:08   
+start                 task1                 2023/12/08-05:09:37   
 
 Task Summary:
 Task Name             Task Size             Start Time            End Time              Description           
-task1                 L                     2023/12/08-04:10:21   2023/12/08-04:11:00   This is good task1    
+task5                 M                     2023/12/08-04:10:21   2023/12/08-04:11:00   This is good task1    
 task2                 L                     2023/12/08-04:10:24   2000/01/01-00:00:00   Task2 is good.        
-task3                 L                     2023/12/08-04:10:29   2000/01/01-00:00:00   Task3 is good.        
-task1                 L                     2023/12/08-04:11:09   2023/12/08-04:11:17   This is good task1    
+task4                 L                     2023/12/08-04:10:29   2023/12/08-05:06:49   Task3 is good.        
+task5                 M                     2023/12/08-04:11:09   2023/12/08-04:11:17   This is good task1    
+task1                 UNDEFINED             2023/12/08-05:09:37   2000/01/01-00:00:00   UNDEFINED             

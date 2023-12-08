@@ -109,6 +109,17 @@ public class TM{
                     }
                     break;
 
+                case Constants.RENAME:
+
+                    if (args.length == 3){
+
+                        logger.renameTask(args[1], args[2]);
+
+                    }else{
+                        throw new IllegalArgumentException(Constants.RENAME
+                                                + ": " + Constants.ERR_ARGUMENT);
+                    }
+                    break;
                 default:
                     throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
             }
@@ -161,6 +172,7 @@ class Constants{
     protected static final String DESCRIBE = "describe";
     protected static final String SUMMARY = "summary";
     protected static final String SIZE = "size";
+    protected static final String RENAME = "rename";
 
     // Error messages
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
@@ -221,6 +233,9 @@ class Task{
 
     // Size this task
     protected void size(TASK_SIZE size){ taskSize = size; }
+
+    // Rename this task
+    protected void rename(String name){ taskName = name; }
 
     // Summarize a task
     protected Supplier<String> getName = () -> taskName;
@@ -501,7 +516,6 @@ class Logger{
                     TASK_SIZE s = TASK_SIZE.valueOf(size);
                     task.describe(description, s);
 
-                    printLog(Constants.DESCRIBE, name);
                 } catch (IllegalArgumentException e) {
                     
                     System.out.println("Invalid size: " + size);
@@ -509,6 +523,7 @@ class Logger{
                 }
             }
         }
+        printLog(Constants.DESCRIBE, name);
     }
 
     // Operate Size
@@ -530,7 +545,6 @@ class Logger{
                     TASK_SIZE s = TASK_SIZE.valueOf(size);
                     task.size(s);
 
-                    printLog(Constants.SIZE, name);
                 } catch (IllegalArgumentException e) {
                     
                     System.out.println("Invalid size: " + size);
@@ -538,6 +552,35 @@ class Logger{
                 }
             }
         }
+        printLog(Constants.SIZE, name);
+    }
+
+    // Operate Rename
+    protected void renameTask(String name, String newName) throws IOException{
+
+        Task target = findTask(name);
+        if (target == null){
+
+            throw new RuntimeException("Couldn't find " + name);
+        }
+
+        for (Map.Entry<String, Duration> entry : map.entrySet()){
+
+            if (entry.getKey().equals(newName)){
+
+                throw new RuntimeException("Name: " + newName + " already exists");
+            }
+        }
+
+        // Change name for every time window
+        for (Task task : taskSummary){
+
+            if (task.hasTask.test(name)){
+
+                task.rename(newName);
+            }
+        }
+        printLog(Constants.RENAME, name);
     }
 
     // Operate Summary all
@@ -566,6 +609,8 @@ class Logger{
             throw new RuntimeException("Couldn't find " + name);
         }
 
+        System.out.println(Constants.SUM_LABEL);
+
         System.out.println(String.format(Constants.PRINT_FORMAT, name)
                             + String.format(Constants.PRINT_FORMAT, 
                                 timeConverter(map.get(name))));
@@ -574,6 +619,8 @@ class Logger{
     protected void summaryTask(TASK_SIZE size){
 
         List<String> viewed = new ArrayList<>();
+
+        System.out.println(Constants.SUM_LABEL);
 
         for (Task task : taskSummary){
 
