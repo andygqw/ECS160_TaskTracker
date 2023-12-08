@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -71,6 +73,10 @@ public class TM{
 
                     break;
 
+                case Constants.SUMMARY:
+
+                    
+                    break;
                 default:
                     throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
             }
@@ -118,10 +124,12 @@ class Constants{
     protected static final String START = "start";
     protected static final String STOP = "stop";
     protected static final String DESCRIBE = "describe";
+    protected static final String SUMMARY = "summary";
 
     // Error messages
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
-    protected static final String ERR_TASK_RUNNING = "Task is not running";
+    protected static final String ERR_NOT_RUNNING = "Task is not running";
+    protected static final String ERR_TASK_RUNNING = "Task is running";
 }
 
 // Size values
@@ -157,21 +165,13 @@ class Task{
     }
 
     // Check if name exists
-    protected boolean hasTask(String name){
-
-        return taskName.equals(name);
-    }
+    protected Predicate<String> hasTask = name -> taskName.equals(name);
 
     // Check if this task is still going
-    protected int isRunning(){
+    protected Supplier<Integer> isRunning = () -> taskEnd.compareTo(Constants.MIN_TIME);
 
-        return taskEnd.compareTo(Constants.MIN_TIME);
-    }
-
-    protected void stop(){
-
-        taskEnd = ZonedDateTime.now();
-    }
+    // Stop this task
+    protected void stop(){ taskEnd = ZonedDateTime.now(); }
 
     protected void describe(String description, TASK_SIZE size){
 
@@ -319,7 +319,7 @@ class Logger{
         // Find latest record
         for (Task task : taskSummary){
 
-            if (task.hasTask(name)){
+            if (task.hasTask.test(name)){
 
                 result = task;
             }
@@ -336,7 +336,7 @@ class Logger{
 
         if(target != null){
 
-            if (target.isRunning() == 0){
+            if (target.isRunning.get() == 0){
 
                 throw new RuntimeException(Constants.ERR_TASK_RUNNING);
             }
@@ -357,12 +357,12 @@ class Logger{
 
         if(target != null){
 
-            if (target.isRunning() == 0){
+            if (target.isRunning.get() == 0){
 
                 target.stop();
             }else{
 
-                throw new RuntimeException(Constants.ERR_TASK_RUNNING); 
+                throw new RuntimeException(Constants.ERR_NOT_RUNNING); 
             }
         }else{
 
