@@ -81,7 +81,6 @@ public class TM{
                     }
 
                     break;
-
                 case Constants.SUMMARY:
 
                     if (args.length == 1){
@@ -119,6 +118,18 @@ public class TM{
                         throw new IllegalArgumentException(Constants.RENAME
                                                 + ": " + Constants.ERR_ARGUMENT);
                     }
+                    break;
+
+                case Constants.DELETE:
+
+                    if (args.length == 2){
+
+                        logger.deleteTask(args[1]);
+                    }else{
+                        throw new IllegalArgumentException(Constants.DELETE
+                                                + ": " + Constants.ERR_ARGUMENT);
+                    }
+                    
                     break;
                 default:
                     throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
@@ -173,6 +184,7 @@ class Constants{
     protected static final String SUMMARY = "summary";
     protected static final String SIZE = "size";
     protected static final String RENAME = "rename";
+    protected static final String DELETE = "delete";
 
     // Error messages
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
@@ -581,6 +593,21 @@ class Logger{
             }
         }
         printLog(Constants.RENAME, name);
+    }
+
+    // Operation Delete
+    protected void deleteTask(String name) throws IOException{
+
+        Task target = findTask(name);
+        if (target == null){
+
+            throw new RuntimeException("Couldn't find " + name);
+        }
+
+        // Delete every time window
+        taskSummary.removeIf(t -> t.getName.get().equals(name));
+
+        printLog(Constants.DELETE, name);
     }
 
     // Operate Summary all

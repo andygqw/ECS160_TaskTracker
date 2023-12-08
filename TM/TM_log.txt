@@ -15,11 +15,11 @@ stop                  task3                 2023/12/08-05:06:49
 rename                task3                 2023/12/08-05:08:52   
 rename                task1                 2023/12/08-05:09:08   
 start                 task1                 2023/12/08-05:09:37   
+delete                task5                 2023/12/08-05:28:42   
+delete                task5                 2023/12/08-05:29:28   
+delete                task2                 2023/12/08-05:29:50   
+delete                task4                 2023/12/08-05:29:57   
+delete                task1                 2023/12/08-05:30:03   
 
 Task Summary:
 Task Name             Task Size             Start Time            End Time              Description           
-task5                 M                     2023/12/08-04:10:21   2023/12/08-04:11:00   This is good task1    
-task2                 L                     2023/12/08-04:10:24   2000/01/01-00:00:00   Task2 is good.        
-task4                 L                     2023/12/08-04:10:29   2023/12/08-05:06:49   Task3 is good.        
-task5                 M                     2023/12/08-04:11:09   2023/12/08-04:11:17   This is good task1    
-task1                 UNDEFINED             2023/12/08-05:09:37   2000/01/01-00:00:00   UNDEFINED             
