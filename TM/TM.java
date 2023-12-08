@@ -72,7 +72,7 @@ class Constants{
     protected static final ZonedDateTime MIN_TIME 
     = ZonedDateTime.parse("2000/01/01-00:00:00", FORMATTER.withZone(ZoneId.systemDefault()));;
 
-    // Printing formats
+    // Printing tasks formats
     protected static final String PRINT_FORMAT = "%-22s";
     protected static final String LABEL = 
                                     String.format(Constants.PRINT_FORMAT, "Task Name")
@@ -82,6 +82,9 @@ class Constants{
                                      + String.format(Constants.PRINT_FORMAT, "Description");
 
     protected static final String UNDEFINED = "Undefined";
+
+    // Printing log formats
+    protected static final String START = "start";
 }
 
 // Data structure of a task
@@ -118,9 +121,9 @@ class Task{
     }
 
     // Check if this task is still going
-    protected boolean isRunning(){
+    protected int isRunning(){
 
-        return taskEnd == Constants.MIN_TIME;
+        return taskEnd.compareTo(Constants.MIN_TIME);
     }
 
     protected void startTask(String name){
@@ -128,7 +131,6 @@ class Task{
         taskName = name;
         taskStart = ZonedDateTime.now();
     }
-
 
     // Format Task print results
     protected String printTask(){
@@ -227,7 +229,7 @@ class Logger{
 
             if (isOpLog && !line.trim().isEmpty()){
 
-                readOp(line);
+                operationLog.add(line);
             }else if (isTaskSummary && !line.trim().isEmpty()){
 
                 readTask(line);
@@ -243,11 +245,7 @@ class Logger{
         }
     }
 
-    private void readOp(String line){
-
-        operationLog.add(line);
-    }
-
+    // Helper function to read all tasks from log
     private void readTask(String line){
 
         String[] words = line.split("\\s+");
@@ -290,7 +288,7 @@ class Logger{
 
         if(target != null){
 
-            if (target.isRunning()){
+            if (target.isRunning() == 0){
 
                 throw new RuntimeException("Task is already running");
             }
@@ -301,7 +299,8 @@ class Logger{
         taskSummary.add(target);
 
         // Define log message
-        String logMsg = "";
+        String logMsg = Constants.START + " " + name + " " +
+                            (ZonedDateTime.now()).format(Constants.FORMATTER);
         printLog(logMsg);
     }
 
@@ -314,7 +313,7 @@ class Logger{
                 writer.write(line);
                 writer.write("\n");
             }
-            writer.write(msg);
+            writer.write(msg + "\n");
             writer.write("\n");
             writer.write("Task Summary:\n");
             writer.write(Constants.LABEL + "\n");
@@ -323,7 +322,6 @@ class Logger{
                 writer.write(task.printTask());
                 writer.write("\n");
             }
-            writer.write("\n");
         }
     }
 
