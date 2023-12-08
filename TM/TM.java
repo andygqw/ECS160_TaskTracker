@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 
 import java.util.Map;
+import java.util.Collections;
 
 
 // Main body
@@ -625,6 +627,8 @@ class Logger{
                                 + String.format(Constants.PRINT_FORMAT, 
                                     timeConverter(timeDifference)));
         }
+        System.out.print("\n");
+        System.out.println(computeStats());
     }
     // Operate summary with Task name argument
     protected void summaryTask(String name){
@@ -664,6 +668,48 @@ class Logger{
                 }               
             }
         }
+    }
+
+    private String computeStats(){
+
+        List<TASK_SIZE> sizes = new ArrayList<>(Arrays.asList(
+                                    TASK_SIZE.S, TASK_SIZE.M, 
+                                    TASK_SIZE.L, TASK_SIZE.XL));
+
+        
+        String result = "";
+
+        for (TASK_SIZE size : sizes){
+
+            int count = 0;
+
+            List<Duration> durations = new ArrayList<>();
+            Duration time = Duration.ZERO;
+            for (Task task : taskSummary){
+
+                if (task.isSize.test(size)){
+
+                    durations.add(task.summaryTime());
+                    time = time.plus(task.summaryTime());
+                    count++;           
+                }
+            }
+
+            if (count >= 2){
+
+                Duration min = Collections.min(durations);
+                Duration max = Collections.max(durations);
+                long averageSeconds = time.getSeconds() / durations.size();
+                Duration avg = Duration.ofSeconds(averageSeconds);
+
+                result += size.toString() + ": \n"
+                            + "Min: " + timeConverter(min) + "\n" 
+                            + "Max: " + timeConverter(max) + "\n"
+                            + "Avg: " + timeConverter(avg) + "\n\n";  
+            }
+            
+        }
+        return result;
     }
 
     private String timeConverter(Duration timeDifference){
