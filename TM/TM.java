@@ -447,11 +447,13 @@ class Logger{
     }
 
     // Operate Summary all
+    // Using map to calculate multiple time windows 
+    // with same name.
     protected void summaryTask(){
 
         Map<String, Duration> map = new HashMap<>();
 
-        System.out.println(Constants.SUM_LABEL);
+        // Get all info
         for (Task task : taskSummary){
 
             if (map.containsKey(task.getName())){
@@ -465,32 +467,42 @@ class Logger{
             }
         }
 
+        // Print here
+        System.out.println(Constants.SUM_LABEL);
         for (Map.Entry<String, Duration> entry : map.entrySet()){
 
             Duration timeDifference = entry.getValue();
 
-            String result = timeDifference.toHours() + " Hours, " 
-                        + timeDifference.toMinutesPart() + " Minutes, " 
-                        + timeDifference.toSecondsPart() + " Seconds";
             System.out.println(String.format(Constants.PRINT_FORMAT, entry.getKey())
-                                + String.format(Constants.PRINT_FORMAT, result));
+                                + String.format(Constants.PRINT_FORMAT, 
+                                    timeConverter(timeDifference)));
         }
     }
 
     // Operate summary with arguments
     protected void summaryTask(String name){
 
-        Task target = findTask(name);
+        Duration time = Duration.ZERO;
+        for (Task task : taskSummary){
 
-        if(target != null){
+            if (task.getName().equals(name)){
 
-            System.out.println(Constants.SUM_LABEL);
-            System.out.println(target.getName());
-
-        }else{
-
-            throw new RuntimeException("Couldn't find " + name);
+                time = time.plus(task.summaryTime());
+            }
         }
+
+        System.out.println(Constants.SUM_LABEL);
+        System.out.println(String.format(Constants.PRINT_FORMAT, name)
+                                + String.format(Constants.PRINT_FORMAT, 
+                                    timeConverter(time)));
+    
+    }
+
+    private String timeConverter(Duration timeDifference){
+
+        return timeDifference.toHours() + " Hours, " 
+                        + timeDifference.toMinutesPart() + " Minutes, " 
+                        + timeDifference.toSecondsPart() + " Seconds";
     }
 
     private void printHelper(String msg) throws IOException{
