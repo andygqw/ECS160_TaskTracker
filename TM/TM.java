@@ -8,6 +8,9 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
+
 import java.util.ArrayList;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -38,6 +41,17 @@ public class TM{
                     }else{
 
                         logger.startTask(args[1]);
+                    }
+                    break;
+
+                case "stop":
+                    
+                    if (args.length != 2){
+
+                        throw new IllegalArgumentException("Invalid command line argument");
+                    }else{
+
+                        logger.stopTask(args[1]);
                     }
                     break;
                 default:
@@ -85,6 +99,8 @@ class Constants{
 
     // Printing log formats
     protected static final String START = "start";
+    protected static final String STOP = "stop";
+
 }
 
 // Data structure of a task
@@ -126,10 +142,9 @@ class Task{
         return taskEnd.compareTo(Constants.MIN_TIME);
     }
 
-    protected void startTask(String name){
+    protected void stop(){
 
-        taskName = name;
-        taskStart = ZonedDateTime.now();
+        taskEnd = ZonedDateTime.now();
     }
 
     // Format Task print results
@@ -301,6 +316,31 @@ class Logger{
 
         // Define log message
         String logMsg = Constants.START + " " + name + " " +
+                            (ZonedDateTime.now()).format(Constants.FORMATTER);
+        printLog(logMsg);
+    }
+
+    // Operate Stop
+    protected void stopTask(String name) throws IOException{
+
+        Task target = findTask(name);
+
+        if(target != null){
+
+            if (target.isRunning() == 0){
+
+                target.stop();
+            }else{
+
+                throw new RuntimeException("Task is not running"); 
+            }
+        }else{
+
+            throw new RuntimeException("Couldn't find " + name);
+        }
+
+        // Define log message
+        String logMsg = Constants.STOP + " " + name + " " +
                             (ZonedDateTime.now()).format(Constants.FORMATTER);
         printLog(logMsg);
     }
