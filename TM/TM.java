@@ -89,7 +89,12 @@ public class TM{
                         logger.summaryTask();
                     }else if (args.length == 2){
 
-                        logger.summaryTask(args[1]);
+                        if (logger.nameRestrict(args[1].toUpperCase())){
+
+                            logger.summaryTask(TASK_SIZE.valueOf(args[1].toUpperCase()));
+                        }else{
+                            logger.summaryTask(args[1]);
+                        }
                     }
                     break;
                 default:
@@ -101,6 +106,7 @@ public class TM{
             System.exit(0);
         }
     }
+
 }
 
 // Constants class
@@ -193,6 +199,7 @@ class Task{
     // Stop this task
     protected void stop(){ taskEnd = ZonedDateTime.now(); }
 
+    // Describle this task
     protected void describe(String description, TASK_SIZE size){
 
         taskDes = description;
@@ -200,10 +207,9 @@ class Task{
     }
 
     // Summarize a task
-    protected String getName(){
+    protected Supplier<String> getName = () -> taskName;
+    protected Predicate<TASK_SIZE> isSize = size -> taskSize.equals(size);
 
-        return taskName;
-    }
     protected Duration summaryTime(){
 
         if (taskEnd.compareTo(Constants.MIN_TIME) == 0){
@@ -374,10 +380,32 @@ class Logger{
         return result; // Null if not found
     }
 
+    // Name can't be S/M/L/XL or UNDEFINED
+    // so this is a test
+    protected boolean nameRestrict(String name){
+
+        try {
+
+            TASK_SIZE.valueOf(name.toUpperCase());
+
+        } catch (IllegalArgumentException e) {
+            
+            return false;
+        }
+
+        return true;
+    }
     // Operations:
     // Operate start
     protected void startTask(String name) throws IOException{
 
+        if (nameRestrict(name)){
+
+            throw new RuntimeException("""
+                                        Invalid name. 
+                                        It can't be one of the following: 
+                                        S, M, L, XL, or UNDEFINED""");
+        }
         Task target = findTask(name);
 
         if(target != null){
@@ -456,14 +484,14 @@ class Logger{
         // Get all info
         for (Task task : taskSummary){
 
-            if (map.containsKey(task.getName())){
+            if (map.containsKey(task.getName.get())){
 
-                Duration time = map.get(task.getName())
+                Duration time = map.get(task.getName.get())
                                     .plus(task.summaryTime());
 
-                map.put(task.getName(), time);
+                map.put(task.getName.get(), time);
             }else{
-                map.put(task.getName(), task.summaryTime());
+                map.put(task.getName.get(), task.summaryTime());
             }
         }
 
@@ -478,15 +506,21 @@ class Logger{
                                     timeConverter(timeDifference)));
         }
     }
-
-    // Operate summary with arguments
+    // Operate summary with Task name argument
     protected void summaryTask(String name){
+
+        Task target = findTask(name);
+
+        if (target == null){
+
+            throw new RuntimeException("Couldn't find " + name);
+        }
 
         Duration time = Duration.ZERO;
         for (Task task : taskSummary){
 
-            if (task.getName().equals(name)){
-
+            if (task.hasTask.test(name)){
+                
                 time = time.plus(task.summaryTime());
             }
         }
@@ -496,6 +530,22 @@ class Logger{
                                 + String.format(Constants.PRINT_FORMAT, 
                                     timeConverter(time)));
     
+    }
+    // Operate summary with Size argument
+    protected void summaryTask(TASK_SIZE size){
+
+        System.out.println(Constants.SUM_LABEL);
+        for (Task task : taskSummary){
+
+           if (task.isSize.test(size)){
+
+                System.out.println(String.format(Constants.PRINT_FORMAT,
+                                                task.getName.get()) 
+                                    + 
+                                    String.format(Constants.PRINT_FORMAT, 
+                                                timeConverter(task.summaryTime())));
+            }
+        }
     }
 
     private String timeConverter(Duration timeDifference){
