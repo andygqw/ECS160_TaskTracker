@@ -24,7 +24,7 @@ public class TM{
             // Throw empty argument exception
             if (args.length == 0){
 
-                throw new Exception("No command line arguments provided");
+                throw new IllegalArgumentException("No command line arguments provided");
             }
 
             Logger logger = Logger.getInstance();
@@ -34,14 +34,14 @@ public class TM{
                     
                     if (args.length != 2){
 
-                        throw new Exception("Invalid command line arguments");
+                        throw new IllegalArgumentException("Invalid command line argument");
                     }else{
 
                         logger.startTask(args[1]);
                     }
                     break;
                 default:
-                    throw new Exception("Invalid command line argument");
+                    throw new IllegalArgumentException("Invalid command line argument");
             }
         }catch(Exception ex){
 
@@ -281,6 +281,7 @@ class Logger{
         return result; // Null if not found
     }
 
+    // Operations:
     // Operate start
     protected void startTask(String name) throws IOException{
 
