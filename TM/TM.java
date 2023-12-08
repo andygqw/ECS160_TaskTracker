@@ -97,6 +97,18 @@ public class TM{
                         }
                     }
                     break;
+
+                case Constants.SIZE:
+
+                    if (args.length == 3){
+
+                        logger.sizeTask(args[1], args[2].toUpperCase());
+                    }else{
+                        throw new IllegalArgumentException(Constants.SIZE 
+                                                + ": " + Constants.ERR_ARGUMENT);
+                    }
+                    break;
+
                 default:
                     throw new IllegalArgumentException(Constants.ERR_ARGUMENT);
             }
@@ -148,6 +160,7 @@ class Constants{
     protected static final String STOP = "stop";
     protected static final String DESCRIBE = "describe";
     protected static final String SUMMARY = "summary";
+    protected static final String SIZE = "size";
 
     // Error messages
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
@@ -205,6 +218,9 @@ class Task{
         taskDes = description;
         taskSize = size;
     }
+
+    // Size this task
+    protected void size(TASK_SIZE size){ taskSize = size; }
 
     // Summarize a task
     protected Supplier<String> getName = () -> taskName;
@@ -491,7 +507,35 @@ class Logger{
                     System.out.println("Invalid size: " + size);
                     System.exit(0);
                 }
-                
+            }
+        }
+    }
+
+    // Operate Size
+    protected void sizeTask(String name, String size) throws IOException{
+        
+        Task target = findTask(name);
+        if (target == null){
+
+            throw new RuntimeException("Couldn't find " + name);
+        }
+
+        // Change size for every time window
+        for (Task task : taskSummary){
+
+            if (task.hasTask.test(name)){
+
+                try {
+
+                    TASK_SIZE s = TASK_SIZE.valueOf(size);
+                    task.size(s);
+
+                    printLog(Constants.SIZE, name);
+                } catch (IllegalArgumentException e) {
+                    
+                    System.out.println("Invalid size: " + size);
+                    System.exit(0);
+                }
             }
         }
     }
@@ -541,14 +585,12 @@ class Logger{
                                                         task.getName.get())
                     + String.format(Constants.PRINT_FORMAT, 
                                 timeConverter(map.get(task.getName.get())))); 
-                                
+
                     viewed.add(task.getName.get());
                 }               
             }
         }
     }
-        
-
 
     private String timeConverter(Duration timeDifference){
 
