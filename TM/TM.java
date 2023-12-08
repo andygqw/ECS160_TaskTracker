@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -17,6 +18,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
+
+import java.util.Map;
 
 
 // Main body
@@ -84,6 +87,9 @@ public class TM{
                     if (args.length == 1){
 
                         logger.summaryTask();
+                    }else if (args.length == 2){
+
+                        logger.summaryTask(args[1]);
                     }
                     break;
                 default:
@@ -127,7 +133,6 @@ class Constants{
 
     protected static final String SUM_LABEL = 
                             String.format(Constants.PRINT_FORMAT, "Task Name")
-                                + String.format(Constants.PRINT_FORMAT, "Task Size")
                                 + String.format(Constants.PRINT_FORMAT, "Time Spent");
 
     protected static final String UNDEFINED = "UNDEFINED";
@@ -142,7 +147,8 @@ class Constants{
     protected static final String ERR_ARGUMENT = "Invalid command line argument";
     protected static final String ERR_NOT_RUNNING = "Task is not running";
     protected static final String ERR_TASK_RUNNING = "Task is running";
-    protected static final String ERR_EXCEED= "Task name is maximum 22 character long";
+    protected static final String ERR_EXCEED= "Task Name exceeds " 
+                                    + PRINT_GAP + " Characters";
 
 }
 
@@ -194,25 +200,17 @@ class Task{
     }
 
     // Summarize a task
-    protected String summary(){
+    protected String getName(){
 
-        String time = isRunning.get() == 
-                    0 ? summaryHelper(ZonedDateTime.now()) : summaryHelper(taskEnd);
-
-        String result = "";
-        result += String.format(Constants.PRINT_FORMAT, taskName);
-        result += String.format(Constants.PRINT_FORMAT, taskSize);
-        result += String.format(Constants.PRINT_FORMAT, time);
-
-        return result;
+        return taskName;
     }
-    private String summaryHelper(ZonedDateTime end){
+    protected Duration summaryTime(){
 
-        Duration timeDifference = Duration.between(taskStart, end);
-            
-        return timeDifference.toHours() + " Hours, " 
-                        + timeDifference.toMinutesPart() + " Minutes, " 
-                        + timeDifference.toSecondsPart() + " Seconds";
+        if (taskEnd.compareTo(Constants.MIN_TIME) == 0){
+
+            return Duration.between(taskStart, ZonedDateTime.now());
+        }
+        return Duration.between(taskStart, taskEnd);
     }
 
     // Format Task print results
@@ -353,7 +351,9 @@ class Logger{
         ZonedDateTime endTime = ZonedDateTime.parse(segments.get(3), 
                                     Constants.FORMATTER.withZone(ZoneId.systemDefault()));
 
-        Task task = new Task(segments.get(0), TASK_SIZE.valueOf(segments.get(1)), startTime, endTime, segments.get(4));
+        Task task = new Task(segments.get(0), 
+                                TASK_SIZE.valueOf(segments.get(1)), 
+                                    startTime, endTime, segments.get(4));
         taskSummary.add(task);
     }
 
@@ -446,13 +446,50 @@ class Logger{
         }
     }
 
-    // Operate Summary
-    protected void summaryTask() throws IOException{
+    // Operate Summary all
+    protected void summaryTask(){
+
+        Map<String, Duration> map = new HashMap<>();
 
         System.out.println(Constants.SUM_LABEL);
         for (Task task : taskSummary){
 
-            System.out.println(task.summary());
+            if (map.containsKey(task.getName())){
+
+                Duration time = map.get(task.getName())
+                                    .plus(task.summaryTime());
+
+                map.put(task.getName(), time);
+            }else{
+                map.put(task.getName(), task.summaryTime());
+            }
+        }
+
+        for (Map.Entry<String, Duration> entry : map.entrySet()){
+
+            Duration timeDifference = entry.getValue();
+
+            String result = timeDifference.toHours() + " Hours, " 
+                        + timeDifference.toMinutesPart() + " Minutes, " 
+                        + timeDifference.toSecondsPart() + " Seconds";
+            System.out.println(String.format(Constants.PRINT_FORMAT, entry.getKey())
+                                + String.format(Constants.PRINT_FORMAT, result));
+        }
+    }
+
+    // Operate summary with arguments
+    protected void summaryTask(String name){
+
+        Task target = findTask(name);
+
+        if(target != null){
+
+            System.out.println(Constants.SUM_LABEL);
+            System.out.println(target.getName());
+
+        }else{
+
+            throw new RuntimeException("Couldn't find " + name);
         }
     }
 
