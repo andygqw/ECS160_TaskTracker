@@ -454,23 +454,28 @@ class Logger{
                                         String size) throws IOException{
 
         Task target = findTask(name);
+        if (target == null){
 
-        if(target != null){
+            throw new RuntimeException("Couldn't find " + name);
+        }
+        
+        for (Task task : taskSummary){
 
-            try {
+            if (task.hasTask.test(name)){
 
-                TASK_SIZE s = TASK_SIZE.valueOf(size);
-                target.describe(description, s);
+                try {
 
-                printLog(Constants.DESCRIBE, name);
-            } catch (IllegalArgumentException e) {
+                    TASK_SIZE s = TASK_SIZE.valueOf(size);
+                    task.describe(description, s);
+
+                    printLog(Constants.DESCRIBE, name);
+                } catch (IllegalArgumentException e) {
+                    
+                    System.out.println("Invalid size: " + size);
+                    System.exit(0);
+                }
                 
-                System.out.println("Invalid size: " + size);
-                System.exit(0);
             }
-        }else{
-
-            throw new RuntimeException("Couldn't find " + name); 
         }
     }
 
